@@ -1,0 +1,23 @@
+# Configuración privada o dependiente del computador
+.vscode/launch.json
+*.code-workspace
+
+# Salidas de compilacion
+/build/
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+*.o
+*.obj
+*.d
+__pycache__/
+*.pyc
+
+# Temporales
+*.tmp
+*.bak
+*~
+Thumbs.db
+.DS_Store

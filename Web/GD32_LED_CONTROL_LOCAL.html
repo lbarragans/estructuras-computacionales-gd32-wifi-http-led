@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GD32VW553 - Control local</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0f172a; color: #f8fafc; padding: 20px; }
+    main { width: min(620px, 100%); background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 26px; box-shadow: 0 20px 55px #02061788; }
+    h1 { margin: 0 0 6px; font-size: clamp(1.45rem, 5vw, 2rem); }
+    .subtitle { margin: 0 0 22px; color: #94a3b8; }
+    .connection { display: grid; grid-template-columns: 1fr auto; gap: 9px; margin-bottom: 16px; }
+    input, button { font: inherit; border: 0; border-radius: 11px; }
+    input { width: 100%; padding: 12px 14px; color: #e2e8f0; background: #0f172a; border: 1px solid #475569; }
+    button { padding: 13px 16px; color: white; font-weight: 700; cursor: pointer; background: #2563eb; transition: transform .08s, filter .15s; }
+    button:hover { filter: brightness(1.12); }
+    button:active { transform: scale(.98); }
+    button:disabled { cursor: wait; opacity: .6; }
+    .status { margin: 14px 0 18px; padding: 15px; background: #0f172a; border-radius: 12px; border-left: 5px solid #64748b; }
+    .status.ok { border-left-color: #22c55e; }
+    .status.error { border-left-color: #ef4444; }
+    #state { font-size: 1.1rem; font-weight: 800; }
+    #detail { display: block; margin-top: 5px; color: #94a3b8; overflow-wrap: anywhere; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .off { background: #475569; }
+    .slow { background: #0f766e; }
+    .fast { background: #b45309; }
+    .refresh { background: #7c3aed; }
+    footer { margin-top: 20px; color: #94a3b8; font-size: .9rem; line-height: 1.45; }
+    code { color: #bae6fd; }
+    @media (max-width: 480px) { .grid, .connection { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>GD32VW553 · Control Wi-Fi</h1>
+    <p class="subtitle">Panel local independiente del navegador web de la placa</p>
+
+    <div class="connection">
+      <input id="address" value="http://192.168.237.1" aria-label="Dirección de la placa">
+      <button id="connect" class="refresh">Conectar</button>
+    </div>
+
+    <div id="statusBox" class="status">
+      <div id="state">Esperando conexión…</div>
+      <small id="detail">Conéctese primero a la red GD32_LED_LAB.</small>
+    </div>
+
+    <div class="grid">
+      <button data-path="/on">Encender</button>
+      <button data-path="/off" class="off">Apagar</button>
+      <button data-path="/toggle">Alternar</button>
+      <button data-path="/blink/slow" class="slow">Parpadeo lento</button>
+      <button data-path="/blink/fast" class="fast">Parpadeo rápido</button>
+      <button id="refresh" class="refresh">Actualizar estado</button>
+    </div>
+
+    <footer>
+      Red esperada: <code>GD32_LED_LAB</code>. La página consulta la API de la placa en
+      <code>192.168.237.1</code>; no necesita Internet.
+    </footer>
+  </main>
+
+  <script>
+    const address = document.getElementById('address');
+    const statusBox = document.getElementById('statusBox');
+    const state = document.getElementById('state');
+    const detail = document.getElementById('detail');
+    const buttons = [...document.querySelectorAll('button')];
+    let timer;
+
+    function apiBase() {
+      return address.value.trim().replace(/\/+$/, '');
+    }
+
+    function setBusy(value) {
+      buttons.forEach(button => button.disabled = value);
+    }
+
+    function showError(error) {
+      statusBox.className = 'status error';
+      state.textContent = 'Sin comunicación con la placa';
+      detail.textContent = `${error.message}. Verifique la red GD32_LED_LAB y la dirección ${apiBase()}.`;
+    }
+
+    async function call(path, expectJson = true) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const response = await fetch(apiBase() + path, {
+          method: 'GET',
+          cache: 'no-store',
+          mode: 'cors',
+          signal: controller.signal
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return expectJson ? await response.json() : await response.text();
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    async function updateStatus() {
+      try {
+        const value = await call('/status');
+        statusBox.className = 'status ok';
+        state.textContent = `${value.mode} · LED ${value.on ? 'encendido' : 'apagado'}`;
+        detail.textContent = `Firmware ${value.version || 'sin versión'} · solicitudes ${value.requests} · aplicación ${value.app_state}`;
+      } catch (error) {
+        showError(error);
+      }
+    }
+
+    async function command(path) {
+      setBusy(true);
+      try {
+        await call(path);
+        await new Promise(resolve => setTimeout(resolve, 350));
+        await updateStatus();
+      } catch (error) {
+        showError(error);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    document.querySelectorAll('[data-path]').forEach(button => {
+      button.addEventListener('click', () => command(button.dataset.path));
+    });
+    document.getElementById('refresh').addEventListener('click', updateStatus);
+    document.getElementById('connect').addEventListener('click', () => {
+      localStorage.setItem('gd32ApiAddress', apiBase());
+      updateStatus();
+    });
+
+    address.value = localStorage.getItem('gd32ApiAddress') || address.value;
+    updateStatus();
+    timer = setInterval(updateStatus, 2000);
+  </script>
+</body>
+</html>
