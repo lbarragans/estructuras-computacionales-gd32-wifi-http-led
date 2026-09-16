@@ -4,4 +4,7 @@
 *.md text eol=lf
 *.json text eol=lf
 *.ps1 text eol=crlf
-
+*.S text eol=lf linguist-language=Assembly
+CMakeLists.txt linguist-detectable=false
+*.cmake linguist-detectable=false
+*.py linguist-detectable=false

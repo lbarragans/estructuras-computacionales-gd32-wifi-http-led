@@ -11,8 +11,23 @@ La placa crea el punto de acceso Wi‑Fi `GD32_LED_LAB` y un servidor HTTP en
 y controla LED1, conectado a PC13, mediante una API y el panel
 [Web/GD32_LED_CONTROL_LOCAL.html](Web/GD32_LED_CONTROL_LOCAL.html).
 
-El laboratorio integra RISC‑V, GPIO, el SDK Wi‑Fi/BLE oficial, MBL, MSDK,
+El laboratorio integra RISC-V, GPIO, el SDK Wi‑Fi/BLE oficial, MBL, MSDK,
 FreeRTOS, lwIP, sockets TCP, HTTP, DHCP, SoftAP y una interfaz HTML.
+
+## Implementaciones definitivas
+
+| Camino | Archivos | Alcance |
+|---|---|---|
+| Referencia validada | `VendorApp/` | aplicacion completa sobre SDK oficial, FreeRTOS, lwIP y WiFi |
+| FreeRTOS puro | `FreeRTOS_Puro/` | espejo integrable de la aplicacion validada |
+| RISC-V puro | `Ensamblador_RISCV_Puro/main.S` | parser HTTP, modos y GPIO con banco local, sin radio |
+
+La radio 802.11, calibracion RF, SoftAP, DHCP, TCP/IP y sockets permanecen en
+el SDK oficial. La variante Assembly no pretende reemplazar esas bibliotecas
+propietarias: aisla la capa de aplicacion para estudiar instrucciones, parser y
+maquina de estados. Consulte
+[Doc/16_VARIANTES_DEL_EJERCICIO.md](Doc/16_VARIANTES_DEL_EJERCICIO.md) y
+[Doc/17_PLAN_DE_VALIDACION_VARIANTES.md](Doc/17_PLAN_DE_VALIDACION_VARIANTES.md).
 
 ## Configuración validada
 
@@ -63,6 +78,8 @@ código C, HTML y CMake, y la automatización no ocultará el aprendizaje.
 14. [Lista de aceptación](Doc/13_LISTA_DE_ACEPTACION.md)
 15. [VS Code paso a paso](Doc/14_VSCODE_PASO_A_PASO.md)
 16. [Preguntas y respuestas razonadas](Doc/15_PREGUNTAS_Y_RESPUESTAS.md)
+17. [Variantes definitivas](Doc/16_VARIANTES_DEL_EJERCICIO.md)
+18. [Validación de variantes](Doc/17_PLAN_DE_VALIDACION_VARIANTES.md)
 
 ## Por qué deben descargarse componentes de GigaDevice
 
