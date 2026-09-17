@@ -13,5 +13,6 @@ Incluye:
 - API de estado y cinco comandos;
 - diagnostico de errores mediante PC13.
 
-No intente compilar esta carpeta con el CMake bare-metal de ejercicios
-anteriores. Debe integrarse dentro del MSDK oficial siguiendo `INTEGRACION.md`.
+No intente compilar esta carpeta con el CMake bare-metal. Desde VS Code use
+**Build + Flash FreeRTOS WiFi**: la tarea la integra en el MSDK oficial,
+construye la imagen completa y la programa mediante WCH-Link.

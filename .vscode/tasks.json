@@ -1,200 +1,46 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "1. Configurar SDK Wi-Fi (CMake)",
-            "type": "process",
-            "command": "${input:cmakeExe}",
-            "args": [
-                "-S",
-                "${input:sdkRoot}",
-                "-B",
-                "${workspaceFolder}/build/debug",
-                "-G",
-                "Ninja",
-                "-DAPP=app_http_led",
-                "-DCMAKE_BUILD_TYPE=Debug",
-                "-DCONFIG_OS=FREERTOS",
-                "-DCONFIG_BLE_FEATURE=MIN",
-                "-DCONFIG_MBEDTLS_VERSION=3.6.2",
-                "-DCMAKE_MAKE_PROGRAM=${input:ninjaExe}",
-                "-DCMAKE_TOOLCHAIN_FILE=${input:sdkRoot}/scripts/cmake/toolchain.cmake"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}",
-                "env": {
-                    "PATH": "${input:toolchainBin};${env:PATH}"
-                }
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated",
-                "clear": true
-            }
-        },
-        {
-            "label": "2. Compilar MBL y MSDK",
-            "type": "process",
-            "command": "${input:cmakeExe}",
-            "args": [
-                "--build",
-                "${workspaceFolder}/build/debug"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}",
-                "env": {
-                    "PATH": "${input:toolchainBin};${env:PATH}"
-                }
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated",
-                "clear": true
-            }
-        },
-        {
-            "label": "3. Construir y validar image-all.bin",
-            "type": "process",
-            "command": "${input:pythonExe}",
-            "args": [
-                "-3",
-                "${workspaceFolder}/tools/image_builder.py",
-                "--sdk",
-                "${input:sdkRoot}",
-                "--output",
-                "${workspaceFolder}/build/debug/artifacts/image-all.bin"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated",
-                "clear": true
-            }
-        },
-        {
-            "label": "4. Programar por UART (preparar BOOT0 antes)",
-            "type": "process",
-            "command": "${input:ispCliPath}",
-            "args": [
-                "-c",
-                "--pn",
-                "${input:comPort}",
-                "--br",
-                "57600",
-                "--db",
-                "8",
-                "--pr",
-                "EVEN",
-                "--sb",
-                "1",
-                "--ec",
-                "OFF",
-                "--co",
-                "OFF",
-                "--to",
-                "30000",
-                "-i",
-                "GD32VW553HMQ6",
-                "-d",
-                "--a",
-                "0x08000000",
-                "--fn",
-                "${workspaceFolder}/build/debug/artifacts/image-all.bin",
-                "--v",
-                "--n"
-            ],
-            "options": {
-                "cwd": "${input:ispCliDir}"
-            },
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated",
-                "clear": true
-            }
-        },
-        {
-            "label": "5. Abrir panel HTML local",
-            "type": "process",
-            "command": "C:/Windows/System32/cmd.exe",
-            "args": [
-                "/c",
-                "start",
-                "",
-                "${workspaceFolder}/Web/GD32_LED_CONTROL_LOCAL.html"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "never",
-                "panel": "shared",
-                "clear": false
-            }
-        }
-    ],
-    "inputs": [
-        {
-            "id": "cmakeExe",
-            "type": "promptString",
-            "description": "Ruta completa de cmake.exe",
-            "default": "C:/ST/STM32CubeCLT_1.19.0/CMake/bin/cmake.exe"
-        },
-        {
-            "id": "ninjaExe",
-            "type": "promptString",
-            "description": "Ruta completa de ninja.exe",
-            "default": "C:/ST/STM32CubeCLT_1.19.0/Ninja/bin/ninja.exe"
-        },
-        {
-            "id": "sdkRoot",
-            "type": "promptString",
-            "description": "Carpeta raíz del SDK GD32VW55x_RELEASE_V1.0.3g",
-            "default": "C:/GD32/GD32VW55x_RELEASE_V1.0.3g"
-        },
-        {
-            "id": "toolchainBin",
-            "type": "promptString",
-            "description": "Carpeta bin de NucleiRISCVGCC",
-            "default": "C:/GD32/GD32EmbeddedBuilder/Tools/NucleiRISCVGCC/bin"
-        },
-        {
-            "id": "pythonExe",
-            "type": "promptString",
-            "description": "Ruta del lanzador de Python",
-            "default": "C:/Windows/py.exe"
-        },
-        {
-            "id": "ispCliPath",
-            "type": "promptString",
-            "description": "Ruta completa de GD32_ISP_CLI.exe",
-            "default": "C:/GD32Tools/GD32_ISP_CLI/GD32_ISP_CLI.exe"
-        },
-        {
-            "id": "ispCliDir",
-            "type": "promptString",
-            "description": "Carpeta que contiene GD32_ISP_CLI.exe y OptionBytes",
-            "default": "C:/GD32Tools/GD32_ISP_CLI"
-        },
-        {
-            "id": "comPort",
-            "type": "promptString",
-            "description": "Número del puerto CH340, sin escribir COM",
-            "default": "10"
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Verify GD32 Environment",
+      "type": "process",
+      "command": "powershell",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/tools/verify_environment.ps1"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build + Flash Original WiFi",
+      "type": "process",
+      "command": "powershell",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/tools/build_wifi.ps1", "-Variant", "original", "-Clean", "-Flash"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build + Flash Assembly",
+      "type": "process",
+      "command": "powershell",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/tools/build_assembly.ps1", "-Clean", "-Flash"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build + Flash FreeRTOS WiFi",
+      "type": "process",
+      "command": "powershell",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/tools/build_wifi.ps1", "-Variant", "freertos", "-Clean", "-Flash"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Open local HTTP panel",
+      "type": "process",
+      "command": "C:/Windows/System32/cmd.exe",
+      "args": ["/c", "start", "", "${workspaceFolder}/Web/GD32_LED_CONTROL_LOCAL.html"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "presentation": { "reveal": "never" }
+    }
+  ]
 }

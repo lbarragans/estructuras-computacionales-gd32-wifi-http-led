@@ -18,9 +18,9 @@ FreeRTOS, lwIP, sockets TCP, HTTP, DHCP, SoftAP y una interfaz HTML.
 
 | Camino | Archivos | Alcance |
 |---|---|---|
-| Referencia validada | `VendorApp/` | aplicacion completa sobre SDK oficial, FreeRTOS, lwIP y WiFi |
-| FreeRTOS puro | `FreeRTOS_Puro/` | espejo integrable de la aplicacion validada |
-| RISC-V puro | `Ensamblador_RISCV_Puro/main.S` | parser HTTP, modos y GPIO con banco local, sin radio |
+| Referencia validada | `VendorApp/` | compilada, programada y validada físicamente: SoftAP, HTTP y LED |
+| FreeRTOS puro | `FreeRTOS_Puro/` | compilación completa validada; prueba física pendiente |
+| RISC-V puro | `Ensamblador_RISCV_Puro/main.S` | compilada, programada y validada por patrón LED, sin radio |
 
 La radio 802.11, calibracion RF, SoftAP, DHCP, TCP/IP y sockets permanecen en
 el SDK oficial. La variante Assembly no pretende reemplazar esas bibliotecas
@@ -39,7 +39,7 @@ maquina de estados. Consulte
 | SDK | `GD32VW55x_RELEASE_V1.0.3g` |
 | Red | `GD32_LED_LAB`, abierta, canal 1, 2,4 GHz |
 | IP del servidor | `192.168.237.1` |
-| Programación | bootloader UART por USB‑C/CH340 |
+| Programación | WCH-Link CMSIS-DAP v2, JTAG a 50 kHz |
 | Imagen completa | MBL en offset 0; MSDK en offset `0xA000` |
 | Dirección de descarga | `0x08000000` |
 
@@ -50,15 +50,16 @@ presenta gráficamente para que el estudiante vea cada etapa:
 
 1. descargar herramientas desde GigaDevice;
 2. extraer el SDK en una ruta corta y sin espacios;
-3. copiar manualmente `VendorApp` a `MSDK/app_http_led`;
-4. configurar y compilar desde las interfaces gráficas;
+3. revisar cómo la tarea copia `VendorApp` a `MSDK/app_http_led`;
+4. configurar y compilar desde las tareas de VS Code;
 5. inspeccionar los binarios producidos;
-6. programar desde una tarea de VS Code que llama al ISP oficial;
+6. programar desde una tarea de VS Code mediante WCH-Link/OpenOCD;
 7. conectar el equipo al SoftAP;
 8. abrir el panel HTML y probar la API.
 
-El repositorio no contiene archivos `.ps1`. GitHub reflejará principalmente el
-código C, HTML y CMake, y la automatización no ocultará el aprendizaje.
+Los archivos `.ps1` son la implementación interna de tareas visibles de VS
+Code. El procedimiento docente continúa siendo manual: el estudiante elige
+cada tarea, lee su salida y comprueba el resultado físico.
 
 ## Lectura recomendada
 
@@ -86,9 +87,10 @@ código C, HTML y CMake, y la automatización no ocultará el aprendizaje.
 `main.c` no puede implementar por sí solo una radio Wi‑Fi. El SDK oficial
 aporta controladores, calibración RF, firmware, pila 802.11, FreeRTOS, lwIP,
 código de arranque, archivos de enlace, bibliotecas y ejemplos. GD32 Embedded
-Builder aporta la cadena Nuclei RISC‑V. GD32 ISP CLI implementa el protocolo del
-bootloader y se ejecuta desde una tarea de VS Code. No se redistribuyen porque conservan sus
-licencias, son grandes y reciben versiones independientes.
+Builder aporta la cadena Nuclei RISC‑V y OpenOCD. Las tareas de VS Code usan
+OpenOCD con WCH-Link para programar la imagen completa. Estos componentes no se
+redistribuyen porque conservan sus licencias, son grandes y reciben versiones
+independientes.
 
 ## Arquitectura
 
@@ -123,20 +125,43 @@ programó un binario incompleto o una dirección incorrecta.
 
 ## Procedimiento gráfico resumido
 
-1. Instale la cadena de Embedded Builder y extraiga GD32 ISP CLI.
-2. Instale el driver CH340 si el USB‑C no aparece como `USB-SERIAL CH340`.
+1. Instale la cadena Nuclei incluida con GD32 Embedded Builder.
+2. Conecte WCH-Link y confirme **WCH CMSIS-DAP** en Windows.
 3. Extraiga el SDK en `C:\GD32\GD32VW55x_RELEASE_V1.0.3g`.
-4. Cree `MSDK\app_http_led` dentro del SDK.
-5. Copie allí los tres archivos de `VendorApp`.
-6. En la paleta de VS Code ejecute **Tasks: Run Task > 1. Configurar SDK Wi‑Fi**.
-7. Ejecute **2. Compilar MBL y MSDK**.
-8. Ejecute **3. Construir y validar image-all.bin**.
-9. Mantenga BOOT0 y pulse y suelte RESET.
-10. Ejecute **4. Programar por UART** y responda los cuadros de VS Code.
-11. Espere descarga y verificación de todas las páginas.
-12. Suelte BOOT0, pulse RESET y espere hasta 30 segundos.
-13. Conéctese a `GD32_LED_LAB`, aunque el sistema avise “sin Internet”.
-14. Abra el HTML local y use sus botones.
+4. Mantenga disponible el SDK bare-metal usado por los ejercicios anteriores.
+5. Abra exclusivamente la raíz de este ejercicio en VS Code.
+6. Copie `tools/local_config.example.ps1` como `tools/local_config.ps1` y use
+   las mismas rutas ya validadas en los ejercicios anteriores.
+7. En VS Code ejecute **Terminal > Run Task > Verify GD32 Environment**.
+8. Ejecute **Build + Flash Assembly** para validar localmente parser, modos y
+   GPIO, sin afirmar que esta ruta contiene una pila WiFi.
+9. Ejecute **Build + Flash Original WiFi** para repetir el camino WiFi validado.
+   **Build + Flash FreeRTOS WiFi** queda disponible como variante cuya
+   compilación se comprobó, pero cuya validación física todavía está pendiente.
+   La tarea copia la aplicación a `MSDK/app_http_led`, limpia el build,
+   construye `image-all.bin` y la programa mediante WCH-Link.
+10. Espere `Programming Finished`, `Verified OK` y `Resetting Target`; el
+    arranque de la radio puede tardar hasta 30 segundos.
+11. Conéctese a `GD32_LED_LAB`, aunque Windows indique “sin Internet”.
+12. Ejecute **Open local HTTP panel** y pruebe todos sus botones.
+
+La ruta WiFi sigue deliberadamente la secuencia del ejemplo oficial
+`softap_tcp_server`: `platform_init()`, `wifi_init()`, creación de tareas y
+`sys_os_start()`. No añada `sys_os_init()` antes de `platform_init()`, porque
+esta plataforma del MSDK ya prepara el wrapper del sistema operativo.
+
+## Estado de validación al 17 de septiembre de 2026
+
+| Variante | Compila | Programa | Evidencia física |
+|---|---:|---:|---|
+| Original `VendorApp` | Sí | Sí | `GD32_LED_LAB`, HTTP 200, panel local y LED |
+| Assembly | Sí | Sí | patrón diagnóstico del LED |
+| FreeRTOS | Sí | pendiente de repetir | no se declara funcional en placa todavía |
+
+El último intento FreeRTOS terminó de construir los 313 objetivos y generó
+`image-all.bin`. La programación no comenzó porque Windows/OpenOCD no encontró
+el WCH-Link (`unable to find a matching CMSIS-DAP device`). Ese mensaje no es
+un error de compilación, pero tampoco constituye una validación física.
 
 ## API
 

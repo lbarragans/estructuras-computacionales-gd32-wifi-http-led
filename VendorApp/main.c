@@ -26,7 +26,7 @@
  * autenticación, TLS ni un parser HTTP completo.
  */
 
-/* Prueba inicial: SoftAP abierto, visible y en canal 1. */
+/* Configuración físicamente validada: SoftAP abierto, visible y canal 1. */
 static char wifi_ssid[] = "GD32_LED_LAB";
 
 /* Parámetros de red, RTOS y hardware centralizados. */
@@ -408,8 +408,8 @@ static void wifi_http_task(void *parameter)
            wifi_ssid, (unsigned long)WIFI_CHANNEL);
 
     /*
-     * password=NULL + AUTH_MODE_OPEN crea una red abierta.
-     * hidden=0 anuncia el SSID. Es una decisión de diagnóstico, no producción.
+     * Esta es exactamente la configuración del repositorio validado:
+     * password=NULL, autenticación abierta y SSID visible.
      */
     g_wifi_start_result = wifi_management_ap_start(
         wifi_ssid, NULL, WIFI_CHANNEL, AUTH_MODE_OPEN, 0U);

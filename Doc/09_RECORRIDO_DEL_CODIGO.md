@@ -108,4 +108,3 @@ Después de iniciar el scheduler, las tareas contienen los bucles permanentes.
 - sin watchdog de aplicación.
 
 Estas limitaciones deben explicarse, no ocultarse.
-

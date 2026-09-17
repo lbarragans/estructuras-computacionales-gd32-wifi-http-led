@@ -1,9 +1,11 @@
 # Configuración privada o dependiente del computador
 .vscode/launch.json
 *.code-workspace
+tools/local_config.ps1
 
 # Salidas de compilacion
 /build/
+/cmake_build/
 *.elf
 *.bin
 *.hex

@@ -1,5 +1,16 @@
 # Historial de revisión
 
+## 2026-09-17 — Validación física y documentación final
+
+- Se registró la validación completa de Original WiFi: SoftAP, HTTP 200, panel
+  local y control físico del LED.
+- Se registró Assembly como compilado, programado y validado mediante patrón
+  LED, aclarando que no implementa radio.
+- Se corrigió el estado de FreeRTOS: compilación completa confirmada y prueba
+  física pendiente.
+- Se documentó WCH-Link CMSIS-DAP v2, JTAG a 50 kHz, recuperación BOOT/RESET y
+  el uso recomendado del panel HTML local.
+
 ## v5 — Publicación didáctica solo con VS Code
 
 - flujo completo mediante tareas y cuadros de VS Code;

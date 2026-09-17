@@ -9,9 +9,13 @@ oficiales. Esta ruta conserva la trazabilidad descrita en los documentos 00 a
 
 ## FreeRTOS puro
 
-`FreeRTOS_Puro/` contiene un espejo explícito de la aplicacion validada y los
+`FreeRTOS_Puro/` contiene un espejo explícito de la aplicacion y los
 archivos necesarios para copiarla como `MSDK/app_http_led`. Se mantiene esta
 ruta separada para que la estructura sea coherente con los ejercicios 00 a 11.
+
+La compilacion completa fue comprobada con el MSDK V1.0.3g. Su prueba fisica
+queda pendiente: no debe presentarse como validada en placa hasta completar
+programacion, arranque del SoftAP, HTTP 200 y control real del LED.
 
 ## Assembly RISC-V puro
 
@@ -23,3 +27,6 @@ Esta variante no crea un SoftAP ni sockets. Una pila WiFi completamente en
 Assembly exigiría reimplementar controladores RF, firmware, FreeRTOS, lwIP,
 DHCP y TCP, lo cual está fuera del objetivo y rompería la dependencia oficial
 validada. Puede usarse como modulo de aplicacion detrás de la recepcion del SDK.
+
+La variante Assembly fue compilada, programada y comprobada físicamente por el
+patron del LED. Esa evidencia valida su capa local, no conectividad WiFi.
